@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flashcards de Adjetivos 💙</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #eaf4ff, #f5edff);
+  color: #34456b;
+  text-align: center;
+  min-height: 100vh;
+  padding: 24px 14px;
+}
+h1 { color: #557fc5; margin-bottom: 8px; }
+.subtitle { color: #6f789b; }
+.counter { margin: 20px 0 12px; font-size: 14px; }
+.card {
+  width: min(100%, 440px);
+  height: 260px;
+  margin: 0 auto 20px;
+  perspective: 1000px;
+  cursor: pointer;
+}
+.inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform .5s;
+  transform-style: preserve-3d;
+}
+.card.flipped .inner { transform: rotateY(180deg); }
+.side {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  border: 3px solid #c9dcff;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 8px 22px #9aaddb44;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.back {
+  transform: rotateY(180deg);
+  background: #f9f5ff;
+  border-color: #dfd0ff;
+}
+.small { font-size: 14px; color: #8995b5; }
+.word { font-size: clamp(25px, 6vw, 34px); font-weight: bold; margin: 16px 0; }
+button {
+  border: 0;
+  border-radius: 18px;
+  padding: 12px 17px;
+  margin: 5px;
+  font-size: 15px;
+  cursor: pointer;
+  background: #dceaff;
+  color: #385b98;
+}
+button:hover { filter: brightness(.97); }
+.primary { background: #8eb6f5; color: white; }
+.controls { max-width: 460px; margin: auto; }
+.hint { font-size: 13px; color: #7783a5; margin: 16px; }
+</style>
+</head>
+<body>
+<h1>୨୧ Flashcards de Adjetivos 💙</h1>
+<p class="subtitle">Aprenda brincando com seu grupo de estudos! ✨</p>
+
+<div class="counter" id="counter"></div>
+
+<div class="card" id="card" onclick="flipCard()">
+  <div class="inner">
+    <div class="side">
+      <div class="small">QUAL É O ADJETIVO?</div>
+      <div class="word" id="question"></div>
+      <div class="small">Toque no cartão para revelar 💫</div>
+    </div>
+    <div class="side back">
+      <div class="small">RESPOSTA</div>
+      <div class="word" id="answer"></div>
+      <div class="small">Muito bem! 🩵</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button onclick="previousCard()">← Anterior</button>
+  <button class="primary" onclick="flipCard()">Revelar resposta</button>
+  <button onclick="nextCard()">Próximo →</button>
+  <br>
+  <button onclick="shuffleCards()">🔀 Embaralhar tudo</button>
+</div>
+
+<p class="hint">Dica: tente responder antes de virar o cartão!</p>
+
+<script>
+const originalCards = [
+["De sol","Solar"],
+["De lua","Lunar"],
+["De estrela","Estelar"],
+["De gato","Felino"],
+["De leão","Leonino"],
+["De boi","Bovino"],
+["De gado","Pecuário"],
+["De porco","Suíno"],
+["De cavalo","Equino; hípico"],
+["De Deus","Divino"],
+["De mãe","Materno; maternal"],
+["De pai","Paterno; paternal"],
+["De irmão","Fraterno; fraternal"],
+["De filho","Filial"],
+["De criança","Pueril; infantil"],
+["De campo","Rural; campestre"],
+["De cidade","Urbano; citadino"],
+["Do coração","Cardíaco"],
+["Do estômago","Gástrico; estomacal"],
+["Do pulmão","Pulmonar"],
+["Do fígado","Hepático"],
+["De orelha","Auricular"],
+["De ouvido","Auditivo"],
+["De visão","Óptico"],
+["De olho","Ocular"],
+["De cabeça","Cefálico"],
+["De cabelo","Capilar"],
+["De osso","Ósseo"],
+["De umbigo","Umbilical"],
+["De rim","Renal"],
+["De cútis (pele)","Cutâneo"],
+["De vaso","Vascular"],
+["De veia","Venoso"],
+["De idade","Etário"],
+["De família","Familiar"],
+["De junho","Junino"],
+["De manhã","Matutino; matinal"],
+["De tarde","Vespertino"],
+["De noite","Noturno"],
+["De semana","Semanal"],
+["De mês","Mensal"],
+["De cem anos","Secular"],
+["De mil anos","Milenar"],
+["Sem cheiro","Inodoro"],
+["Sem sabor","Insípido"],
+["Sem sal","Insosso"],
+["Sem capacidade","Incapaz"],
+["Com febre","Febril"],
+["De chuva","Pluvial"],
+["De rio","Fluvial"],
+["De mar","Marítimo; marinho"],
+["De lago","Lacustre"],
+["De água","Aquático"],
+["De gelo","Glacial"],
+["De homem","Humano"],
+["Do povo","Popular"],
+["De anjo","Angelical"],
+["De dedo","Digital"],
+["De guerra","Bélico"],
+["De moeda","Monetário"],
+["De morte","Letal; mortífero; mortal"],
+["De tecido","Têxtil"],
+["De selo","Filatélico"]
+];
+
+let cards = [...originalCards];
+let index = 0;
+
+function render() {
+  document.getElementById("question").textContent = cards[index][0];
+  document.getElementById("answer").textContent = cards[index][1];
+  document.getElementById("counter").textContent =
+    `Cartão ${index + 1} de ${cards.length}`;
+  document.getElementById("card").classList.remove("flipped");
+}
+
+function flipCard() {
+  document.getElementById("card").classList.toggle("flipped");
+}
+
+function nextCard() {
+  index = (index + 1) % cards.length;
+  render();
+}
+
+function previousCard() {
+  index = (index - 1 + cards.length) % cards.length;
+  render();
+}
+
+function shuffleCards() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  index = 0;
+  render();
+}
+
+shuffleCards();
+</script>
+</body>
+</html>
